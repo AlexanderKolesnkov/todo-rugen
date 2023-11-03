@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"database/sql"
+	"errors"
 	"pilrugen.com/todorugen/pkg/models"
 )
 
@@ -15,5 +16,19 @@ func (m *TasksModel) Insert(title, content, created, status string) (int, error)
 }
 
 func (m *TasksModel) Get(id int) (*models.Tasks, error) {
-	return nil, nil
+	stmt := `SELECT id, title, content, created, status FROM tasks
+	WHERE id = $1`
+
+	t := &models.Tasks{}
+
+	err := m.DB.QueryRow(stmt, id).Scan(&t.ID, &t.Title, &t.Content, &t.Created, &t.Status)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		} else {
+			return nil, err
+		}
+	}
+
+	return t, nil
 }
