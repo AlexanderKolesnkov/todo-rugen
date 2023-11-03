@@ -7,7 +7,7 @@ import (
 
 var ErrNoRecord = errors.New("models: подходящей записи не найдено")
 
-type Tasks struct {
+type Task struct {
 	ID      int
 	Title   string
 	Content string

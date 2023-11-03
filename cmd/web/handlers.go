@@ -16,6 +16,14 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	t, err := app.tasks.GetAll()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	data := &templateData{Tasks: t}
+
 	files := []string{
 		"./ui/html/home.page.tmpl",
 		"./ui/html/base.layout.tmpl",
@@ -29,7 +37,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.Execute(w, nil)
+	err = ts.Execute(w, data)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Internal Sever Error", 500)
@@ -39,6 +47,15 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) pageTask(w http.ResponseWriter, r *http.Request) {
+	t, err := app.tasks.GetAll()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	for _, task := range t {
+		fmt.Fprintf(w, "%v\n", task)
+	}
 	w.Write([]byte("Tasks page"))
 }
 
@@ -59,9 +76,46 @@ func (app *application) showTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "%v", t)
+	data := &templateData{
+		Task:   t,
+		NextID: t.ID + 1,
+		PrevID: t.ID - 1,
+	}
 
-	fmt.Fprintf(w, "\nTasks with ID %d showing...", id)
+	if data.PrevID < 1 {
+		data.PrevID = 1
+	}
+
+	MaxID, err := app.tasks.MaxID()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	if data.NextID > MaxID {
+		data.NextID = MaxID
+	}
+
+	files := []string{
+		"./ui/html/show.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	//fmt.Fprintf(w, "%v", t)
+
+	fmt.Fprintf(w, "Tasks with ID %d showing...", id)
 }
 
 func (app *application) createTask(w http.ResponseWriter, r *http.Request) {

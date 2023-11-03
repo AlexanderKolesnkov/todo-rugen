@@ -19,7 +19,7 @@ type cfg struct {
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
-	tasks    *postgresql.TasksModel
+	tasks    *postgresql.TaskModel
 }
 
 func main() {
@@ -44,7 +44,7 @@ func main() {
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
-		tasks:    &postgresql.TasksModel{DB: db},
+		tasks:    &postgresql.TaskModel{DB: db},
 	}
 
 	srv := &http.Server{

@@ -1,0 +1,21 @@
+{{template "base" .}}
+
+{{define "title"}}Активность #{{.Task.ID}}{{end}}
+
+{{define "main"}}
+<div class='task'>
+    <div class='metadata'>
+        <strong>{{.Task.Title}}</strong>
+        <span>#{{.Task.ID}}</span>
+    </div>
+    <pre><code>{{.Task.Content}}</code></pre>
+    <div class='metadata'>
+        <time>Дата Создания: {{.Task.Created}}</time>
+        <span>Статус: {{.Task.Status}}</span>
+    </div>
+    <div class='metadata'>
+        <a href='/task/show?id={{.PrevID}}'>Предыдущая Активность</a>
+        <a href='/task/show?id={{.NextID}}'>Следующая Активность</a>
+     </div>
+</div>
+{{end}}
