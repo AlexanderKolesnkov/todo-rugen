@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -17,9 +18,10 @@ type cfg struct {
 }
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	tasks    *postgresql.TaskModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	tasks         *postgresql.TaskModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -38,13 +40,18 @@ func main() {
 	if err != nil {
 		errorLog.Fatal(err)
 	}
-
 	defer db.Close()
 
+	templateCache, err := newTemplateCache("./ui/html")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		tasks:    &postgresql.TaskModel{DB: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		tasks:         &postgresql.TaskModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{

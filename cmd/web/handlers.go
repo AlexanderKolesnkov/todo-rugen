@@ -3,8 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
-	"log"
 	"net/http"
 	"pilrugen.com/todorugen/pkg/models"
 	"strconv"
@@ -22,28 +20,14 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &templateData{Tasks: t}
-
-	files := []string{
-		"./ui/html/home.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Internal Sever Error", 500)
-	}
+	app.render(w, r, "home.page.tmpl", &templateData{
+		Tasks: t,
+	})
 
 	w.Write([]byte("Home page"))
+	for _, task := range t {
+		fmt.Fprintf(w, "%v\n", task)
+	}
 }
 
 func (app *application) pageTask(w http.ResponseWriter, r *http.Request) {
@@ -96,22 +80,7 @@ func (app *application) showTask(w http.ResponseWriter, r *http.Request) {
 		data.NextID = MaxID
 	}
 
-	files := []string{
-		"./ui/html/show.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-	}
+	app.render(w, r, "show.page.tmpl", data)
 
 	//fmt.Fprintf(w, "%v", t)
 
